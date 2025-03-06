@@ -5,10 +5,15 @@ from .position import Position
 class Guard:
     id: int
     pos: Position
-    direction: int  # 1 = right, -1 = left
-    vision_range: float = 100
+    direction: int  # 1 or -1
+    speed: int = 2
+    patrol_axis: str = "horizontal"  # "horizontal" or "vertical"
+    vision_range: float = 100.0
 
-    def patrol(self):
-        self.pos.x += 2 * self.direction
-        if self.pos.x < 200 or self.pos.x > 600:
-            self.direction *= -1
+    def get_next_position(self):
+        if self.patrol_axis == "horizontal":
+            next_x = self.pos.x + self.direction * self.speed
+            return Position(next_x, self.pos.y)
+        else:  # vertical
+            next_y = self.pos.y + self.direction * self.speed
+            return Position(self.pos.x, next_y)

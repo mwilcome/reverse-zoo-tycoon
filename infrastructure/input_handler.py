@@ -1,6 +1,7 @@
 import pygame
 from domain.aggregates.zoo_escape import ZooEscape
 from domain.services.stealth_service import StealthService
+from domain.entities.position import Position
 
 class InputHandler:
     def handle_input(self, zoo: ZooEscape) -> bool:
@@ -13,10 +14,14 @@ class InputHandler:
                 if event.key == pygame.K_e:
                     for human in zoo.humans:
                         zoo.free_human(human)
+                    for human in zoo.humans:
                         zoo.escape_human(human)
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]: zoo.zookeeper.pos.x -= 4
-        if keys[pygame.K_RIGHT]: zoo.zookeeper.pos.x += 4
-        if keys[pygame.K_UP]: zoo.zookeeper.pos.y -= 4
-        if keys[pygame.K_DOWN]: zoo.zookeeper.pos.y += 4
+        new_pos = Position(zoo.zookeeper.pos.x, zoo.zookeeper.pos.y)
+        if keys[pygame.K_a]: new_pos.x -= 4  # Left
+        if keys[pygame.K_d]: new_pos.x += 4  # Right
+        if keys[pygame.K_w]: new_pos.y -= 4  # Up
+        if keys[pygame.K_s]: new_pos.y += 4  # Down
+        if not zoo.check_collision(new_pos):
+            zoo.zookeeper.pos = new_pos
         return True

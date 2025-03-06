@@ -16,5 +16,12 @@ class GameService:
             running = self.input_handler.handle_input(self.zoo)
             self.zoo.update()
             caught = self.zoo.is_caught()
+            won = self.zoo.is_won()
             self.renderer.render(self.zoo, caught)
             self.ui.update(caught, self.zoo.zookeeper.humans)
+            if caught:
+                print("Game Over! You were caught.")
+                running = False
+            elif won:
+                print("You win! All humans escaped.")
+                running = False
