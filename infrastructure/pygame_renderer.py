@@ -1,4 +1,5 @@
 import pygame
+import math
 from domain.aggregates.zoo_escape import ZooEscape
 from infrastructure.map_generator import MapGenerator
 
@@ -7,7 +8,6 @@ class PygameRenderer:
         pygame.init()
         self.screen = pygame.display.set_mode((800, 600))
         pygame.display.set_caption("Reverse Zoo Tycoon - Grok Edition")
-        self.clock = pygame.time.Clock()
         self.camera_x, self.camera_y = 0, 0
 
     def render(self, zoo: ZooEscape, caught: bool):
@@ -30,15 +30,28 @@ class PygameRenderer:
             pygame.draw.circle(self.screen, (0, 255, 255), (int(x + MapGenerator.TILE_SIZE / 2), int(y + MapGenerator.TILE_SIZE / 2)), 10)
 
         color = (0, 0, 100) if zoo.zookeeper.stealth else (0, 0, 255)
-        pygame.draw.rect(self.screen, color, (zoo.zookeeper.pos.x - self.camera_x, zoo.zookeeper.pos.y - self.camera_y, 20, 20))  # Smaller player
+        pygame.draw.rect(self.screen, color, (zoo.zookeeper.pos.x - self.camera_x, zoo.zookeeper.pos.y - self.camera_y, 20, 20))
         for human in zoo.humans:
             color = (255, 0, 0) if human.state == "caged" else (0, 255, 0)
-            pygame.draw.rect(self.screen, color, (human.pos.x - self.camera_x, human.pos.y - self.camera_y, 15, 15))  # Smaller humans
+            pygame.draw.rect(self.screen, color, (human.pos.x - self.camera_x, human.pos.y - self.camera_y, 15, 15))
         for guard in zoo.guards:
-            pygame.draw.rect(self.screen, (255, 165, 0), (guard.pos.x - self.camera_x, guard.pos.y - self.camera_y, 30, 30))  # Smaller guard
-
-        pygame.display.flip()
-        self.clock.tick(60)
+            guard_screen_x = guard.pos.x - self.camera_x
+            guard_screen_y = guard.pos.y - self.camera_y
+            pygame.draw.rect(self.screen, (255, 165, 0), (guard_screen_x, guard_screen_y, 30, 30))
+            if guard.vision_type == "radial":
+                pygame.draw.circle(self.screen, (0, 0, 255), (int(guard_screen_x + 15), int(guard_screen_y + 15)), int(guard.vision_range), 1)
+            elif guard.vision_type == "cone":
+                facing_angle = guard.get_facing_angle()
+                angle1 = math.radians(facing_angle - 30)
+                angle2 = math.radians(facing_angle + 30)
+                point1 = (guard.pos.x + guard.vision_range * math.cos(angle1), guard.pos.y + guard.vision_range * math.sin(angle1))
+                point2 = (guard.pos.x + guard.vision_range * math.cos(angle2), guard.pos.y + guard.vision_range * math.sin(angle2))
+                points = [
+                    (guard_screen_x + 15, guard_screen_y + 15),
+                    (point1[0] - self.camera_x, point1[1] - self.camera_y),
+                    (point2[0] - self.camera_x, point2[1] - self.camera_y)
+                ]
+                pygame.draw.polygon(self.screen, (0, 0, 255), points, 1)
 
     def quit(self):
         pygame.quit()

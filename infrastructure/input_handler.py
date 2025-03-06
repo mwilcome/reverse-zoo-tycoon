@@ -24,4 +24,7 @@ class InputHandler:
         if keys[pygame.K_s]: new_pos.y += 4  # Down
         if not zoo.check_collision(new_pos):
             zoo.zookeeper.pos = new_pos
+        # Clamp player position to map boundaries
+        zoo.zookeeper.pos.x = max(0, min(zoo.zookeeper.pos.x, zoo.map_width - zoo.player_width))
+        zoo.zookeeper.pos.y = max(0, min(zoo.zookeeper.pos.y, zoo.map_height - zoo.player_height))
         return True

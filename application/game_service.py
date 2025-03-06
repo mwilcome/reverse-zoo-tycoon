@@ -1,3 +1,4 @@
+import pygame
 from domain.aggregates.zoo_escape import ZooEscape
 from infrastructure.pygame_renderer import PygameRenderer
 from infrastructure.input_handler import InputHandler
@@ -8,7 +9,8 @@ class GameService:
         self.zoo = ZooEscape()
         self.renderer = PygameRenderer()
         self.input_handler = InputHandler()
-        self.ui = GrokUI()
+        self.ui = GrokUI(self.renderer.screen)
+        self.clock = pygame.time.Clock()  # Add clock for FPS control
 
     def run(self):
         running = True
@@ -18,10 +20,9 @@ class GameService:
             caught = self.zoo.is_caught()
             won = self.zoo.is_won()
             self.renderer.render(self.zoo, caught)
-            self.ui.update(caught, self.zoo.zookeeper.humans)
-            if caught:
-                print("Game Over! You were caught.")
-                running = False
-            elif won:
-                print("You win! All humans escaped.")
+            self.ui.update(caught, self.zoo.zookeeper.humans, won, self.zoo.score)
+            pygame.display.flip()
+            self.clock.tick(60)  # Cap at 60 FPS
+            if caught or won:
+                pygame.time.wait(3000)  # Pause for 3 seconds
                 running = False
